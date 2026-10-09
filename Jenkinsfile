@@ -46,15 +46,15 @@ pipeline {
             steps { bat "npx playwright install ${params.BROWSER}" }
         }
 
-                stage('Run Playwright Tests') {
-                        steps {
-                            withCredentials([usernamePassword(
-                                credentialsId: 'qa-app-user',
-                                usernameVariable: 'APP_USER',
-                                passwordVariable: 'APP_PASS'
-                            )]) {
-                                bat 'npx playwright test --project=chromium --workers=1'
-                            }
+        stage('Run Playwright Tests') {
+            steps {
+                // APP_USER / APP_PASS exist only inside this block
+                withCredentials([usernamePassword(
+                        credentialsId: 'qa-app-user',
+                        usernameVariable: 'APP_USER',
+                        passwordVariable: 'APP_PASS')]) {
+                    bat "npx playwright test --project=${params.BROWSER} --grep @${params.SUITE} --workers=${params.WORKERS}"
+                }
             }
         }
     }
@@ -76,15 +76,15 @@ pipeline {
         }
         success {
             echo "Build succeeded. No email sent."
-            // emailext to: 'qa-team@company.com',
-            //          subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${params.BROWSER})",
-            //          body: "All tests passed.\nBuild: ${env.BUILD_URL}"
+            emailext to: 'jeevanpgowda27@gmail.com',
+                      subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${params.BROWSER})",
+                      body: "All tests passed.\nBuild: ${env.BUILD_URL}"
         }
         failure {
             echo "Build failed. No email sent."
-            // emailext to: 'qa-team@company.com',
-            //          subject: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${params.BROWSER})",
-            //          body: "Tests failed. Check the Playwright Report.\nBuild: ${env.BUILD_URL}"
+            emailext to: 'jeevanpgowda27@gmail.com',
+                      subject: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${params.BROWSER})",
+                      body: "Tests failed. Check the Playwright Report.\nBuild: ${env.BUILD_URL}"
         }
     }
 }
