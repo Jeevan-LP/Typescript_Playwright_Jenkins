@@ -75,13 +75,11 @@ pipeline {
             archiveArtifacts artifacts: 'test-results/**/*.*', allowEmptyArchive: true
         }
         success {
-            echo "Build succeeded. No email sent."
             emailext to: 'jeevanpgowda27@gmail.com',
                       subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${params.BROWSER})",
                       body: "All tests passed.\nBuild: ${env.BUILD_URL}"
         }
         failure {
-            echo "Build failed. No email sent."
             emailext to: 'jeevanpgowda27@gmail.com',
                       subject: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${params.BROWSER})",
                       body: "Tests failed. Check the Playwright Report.\nBuild: ${env.BUILD_URL}"
