@@ -46,15 +46,15 @@ pipeline {
             steps { bat "npx playwright install ${params.BROWSER}" }
         }
 
-        stage('Run Playwright Tests') {
-            steps {
-                // APP_USER / APP_PASS exist only inside this block
-                withCredentials([usernamePassword(
-                        credentialsId: 'qa-app-user',
-                        usernameVariable: 'APP_USER',
-                        passwordVariable: 'APP_PASS')]) {
-                    bat "npx playwright test --project=${params.BROWSER} --grep @${params.SUITE} --workers=${params.WORKERS}"
-                }
+                stage('Run Playwright Tests') {
+                        steps {
+                            withCredentials([usernamePassword(
+                                credentialsId: 'qa-app-user',
+                                usernameVariable: 'APP_USER',
+                                passwordVariable: 'APP_PASS'
+                            )]) {
+                                bat 'npx playwright test --project=chromium --workers=1'
+                            }
             }
         }
     }
