@@ -5,15 +5,17 @@ const isCI = !!process.env.CI;
 export default defineConfig({
   testDir: './tests',
   timeout: 30_000,
-  retries: isCI ? 1 : 0,            // retry once in Jenkins to reduce flaky noise
+  retries: isCI ? 1 : 0,
   workers: isCI ? 2 : undefined,
   reporter: [
-  ['list'],
-  ['allure-playwright', { resultsDir: 'allure-results' }]
+    ['list'],
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['junit', { outputFile: 'test-results/results.xml' }],
+    ['allure-playwright', { resultsDir: 'allure-results' }],
   ],
   use: {
     baseURL: 'https://demowebshop.tricentis.com/',
-    headless: false,
+    headless: isCI ? true : false,
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'on-first-retry',

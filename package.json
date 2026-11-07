@@ -4,6 +4,10 @@
   "description": "In4Suite Playwright Automation Framework",
   "scripts": {
     "test": "playwright test",
+    "test:jenkins": "playwright test tests/jenkinsTest.spec.ts",
+    "test:chromium": "playwright test tests/jenkinsTest.spec.ts --project=chromium",
+    "test:firefox": "playwright test tests/jenkinsTest.spec.ts --project=firefox",
+    "test:webkit": "playwright test tests/jenkinsTest.spec.ts --project=webkit",
     "allure:generate": "allure generate ./allure-results --clean -o ./allure-report",
     "allure:open": "allure open ./allure-report",
     "allure:report": "npm run allure:generate && npm run allure:open"

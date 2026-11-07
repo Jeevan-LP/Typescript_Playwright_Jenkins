@@ -1,89 +1,110 @@
+// Jenkinsfile.windows
+// Declarative Jenkins pipeline for Windows build agents
+
+
+/*
+Pipeline Stages:
+1. Checkout: Checks out the source code from the repository.
+2. Install Dependencies: Installs project dependencies using npm ci.
+3. Install Playwright Browsers & Dependencies: Installs Playwright browsers and copies the .env.example file to .env if it doesn't exist.
+4. Run Playwright Tests: Executes the selected Playwright test suite with the specified browser and mode (headless or headed).
+5. Post Actions: Archives test reports, publishes JUnit and Allure reports, and cleans up allure-results on success.
+6. Email Notification: Sends an email notification with the build status and links to the reports.
+7. Parameters: Allows users to select the test suite, browser, and mode for the test execution.
+
+*/
+
 pipeline {
-    agent any
-
-    tools {
-        nodejs 'NodeJS-20'          // must match the name set in Manage Jenkins -> Tools
+  agent any
+  tools {
+    git 'Default'
+  }
+  options { timestamps() }
+  parameters {
+    choice(
+      name: 'TEST_SUITE',
+      choices: ['test:jenkins', 'test:chromium', 'test:firefox', 'test:webkit'],
+      description: 'Select the Playwright test command to run'
+    )
+    choice(
+      name: 'BROWSER',
+      choices: ['chromium', 'firefox', 'webkit'],
+      description: 'Select the browser for tests'
+    )
+    choice(
+      name: 'MODE',
+      choices: ['headless', 'headed'],
+      description: 'Run tests in headless or headed mode'
+    )
+  }
+  environment {
+    NODE_ENV = 'test'
+    CI = '1'
+  }
+  stages {
+    stage('🔄 Checkout') {
+      steps {
+        checkout scm
+      }
     }
-
-    parameters {
-        choice(name: 'BROWSER', choices: ['chromium', 'firefox', 'webkit'], description: 'Browser project (firefox/webkit must be enabled in playwright.config.ts)')
-        choice(name: 'SUITE',   choices: ['All', 'Sanity', 'Regression'],    description: 'Test tag to run (matches @Sanity / @Regression in your tests)')
-        string(name: 'WORKERS', defaultValue: '2',                           description: 'Parallel workers')
+    stage('📦 Install Dependencies') {
+      steps {
+        powershell 'npm ci'
+      }
     }
-
-    environment {
-        CI       = 'true'                                  // enables forbidOnly in playwright.config.ts
-        BASE_URL = 'https://demowebshop.tricentis.com/'    // you have only one site, so no ENV dropdown
+    stage('🤖 Install Playwright Browsers & Dependencies') {
+      steps {
+        powershell 'npx playwright install --with-deps'
+      }
     }
-
-    options {
-        timeout(time: 60, unit: 'MINUTES')
-        buildDiscarder(logRotator(numToKeepStr: '20'))
-        disableConcurrentBuilds()
+    stage('▶️ Run Playwright Tests') {
+      steps {
+        script {
+          def suite = params.TEST_SUITE
+          def browserFlag = "--project=${params.BROWSER}"
+          def modeFlag = params.MODE == 'headed' ? '--headed' : ''
+          powershell "npm run ${suite} -- ${browserFlag} ${modeFlag}"
+        }
+      }
     }
+  }
+  post {
+    always {
+      archiveArtifacts artifacts: 'playwright-report/**,allure-results/**,test-results/**', allowEmptyArchive: true
+      junit testResults: 'test-results/results.xml', allowEmptyResults: true
+      allure includeProperties: false, results: [[path: 'allure-results']]
+      publishHTML([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: 'playwright-report',
+        reportFiles: 'index.html',
+        reportName: 'Playwright HTML Report'
+      ])
 
-    stages {
-        stage('Clean Workspace') {
-            steps { cleanWs() }
+      script {
+        if (env.RECIPIENT_EMAIL?.trim()) {
+          emailext(
+            subject: "Jenkins Build: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
+            body: """
+              <h2>Playwright Test Execution Report</h2>
+              <p><b>Job:</b> ${env.JOB_NAME}</p>
+              <p><b>Build:</b> #${env.BUILD_NUMBER}</p>
+              <p><b>Status:</b> ${currentBuild.currentResult}</p>
+              <p><b>Test Suite:</b> ${params.TEST_SUITE}</p>
+              <p><b>Browser:</b> ${params.BROWSER}</p>
+              <p><a href="${env.BUILD_URL}">Open Jenkins Build</a></p>
+            """,
+            to: env.RECIPIENT_EMAIL,
+            mimeType: 'text/html'
+          )
         }
-
-        stage('Checkout Code') {
-            steps { checkout scm }   // repo URL and branch come from the Jenkins job settings
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                bat 'node -v && npm -v'
-                bat 'npm ci'
-            }
-        }
-
-        stage('Install Browsers') {
-            steps { bat "npx playwright install ${params.BROWSER}" }
-        }
-
-        stage('Run Playwright Tests') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'qa-app-user',
-                    usernameVariable: 'APP_USER',
-                    passwordVariable: 'APP_PASS'
-                )]) {
-                    script {
-                        def grep = params.SUITE == 'All' ? '' : "--grep @${params.SUITE}"
-                        bat "npx playwright test --project=${params.BROWSER} --workers=${params.WORKERS} ${grep}"
-                    }
-                }
-            }
-        }
+      }
     }
-
-    post {
-        always {
-            allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
-
-            junit allowEmptyResults: true, testResults: 'test-results/results.xml'
-
-            publishHTML(target: [
-                reportDir: 'playwright-report',
-                reportFiles: 'index.html',
-                reportName: 'Playwright Report',
-                keepAll: true,
-                alwaysLinkToLastBuild: true,
-                allowMissing: true
-            ])
-
-            archiveArtifacts artifacts: 'test-output/**/*.*, test-results/**/*.*', allowEmptyArchive: true
-        }
-        success {
-            emailext to: 'jeevanpgowda27@gmail.com',
-                     subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${params.BROWSER})",
-                     body: "All tests passed.\nBuild: ${env.BUILD_URL}\nAllure Report: ${env.BUILD_URL}allure"
-        }
-        failure {
-            emailext to: 'jeevanpgowda27@gmail.com',
-                     subject: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER} (${params.BROWSER})",
-                     body: "Tests failed. Check the Allure Report.\nBuild: ${env.BUILD_URL}\nAllure Report: ${env.BUILD_URL}allure"
-        }
+    success {
+      script {
+        powershell 'Remove-Item -Recurse -Force allure-results -ErrorAction SilentlyContinue'
+      }
     }
+  }
 }
