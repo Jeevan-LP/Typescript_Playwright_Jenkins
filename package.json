@@ -4,12 +4,9 @@
   "description": "In4Suite Playwright Automation Framework",
   "scripts": {
     "test": "playwright test",
-    "test:smoke": "playwright test --grep @smoke",
-    "test:regression": "playwright test --grep @regression",
-    "test:chromium": "playwright test --project=chromium",
-    "test:firefox": "playwright test --project=firefox",
-    "test:edge": "playwright test --project=edge",
-    "report": "playwright show-report playwright-report"
+    "allure:generate": "allure generate ./allure-results --clean -o ./allure-report",
+    "allure:open": "allure open ./allure-report",
+    "allure:report": "npm run allure:generate && npm run allure:open"
   },
   "devDependencies": {
     "@playwright/test": "^1.64.0",
@@ -17,6 +14,7 @@
     "typescript": "^5.9.0"
   },
   "dependencies": {
+    "allure-playwright": "^3.14.0",
     "dotenv": "^18.0.6"
   }
 }
