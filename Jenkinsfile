@@ -22,9 +22,9 @@ pipeline {
   options { timestamps() }
   parameters {
     choice(
-      name: 'TEST_SUITE',
-      choices: ['test:jenkins', 'test:chromium', 'test:firefox', 'test:webkit'],
-      description: 'Select the Playwright test command to run'
+      name: 'TEST_TAG',
+      choices: ['@jenkins', '@smoke', '@regression'],
+      description: 'Select the Playwright tag to run'
     )
     choice(
       name: 'BROWSER',
@@ -60,10 +60,11 @@ pipeline {
     stage('▶️ Run Playwright Tests') {
       steps {
         script {
-          def suite = params.TEST_SUITE
+          def tag = params.TEST_TAG ?: '@jenkins'
           def browserFlag = "--project=${params.BROWSER}"
           def modeFlag = params.MODE == 'headed' ? '--headed' : ''
-          powershell "npm run ${suite} -- ${browserFlag} ${modeFlag}"
+          def grepFlag = "--grep \"${tag}\""
+          powershell "npx playwright test tests/jenkinsTest.spec.ts ${browserFlag} ${grepFlag} ${modeFlag}"
         }
       }
     }
@@ -91,7 +92,7 @@ pipeline {
               <p><b>Job:</b> ${env.JOB_NAME}</p>
               <p><b>Build:</b> #${env.BUILD_NUMBER}</p>
               <p><b>Status:</b> ${currentBuild.currentResult}</p>
-              <p><b>Test Suite:</b> ${params.TEST_SUITE}</p>
+              <p><b>Test Tag:</b> ${params.TEST_TAG}</p>
               <p><b>Browser:</b> ${params.BROWSER}</p>
               <p><a href="${env.BUILD_URL}">Open Jenkins Build</a></p>
             """,

@@ -29,7 +29,7 @@ test.beforeEach("Logout to Application", async()=>{
     await testPage.locator(".ico-logout").click();
 })
 
-test("Subscribe", async()=>{
+test("Subscribe @jenkins", async()=>{
         await testPage.locator("#newsletter-email").fill(process.env.APP_USER!);
         await testPage.locator("#newsletter-subscribe-button").click();
         await testPage.locator("#pollanswers-2").check();
