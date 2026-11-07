@@ -1,500 +1,571 @@
-Jenkins 
-a. Jenkins starts: java -jar jenkins.war --enable-future-java
-b. Jenkins token: 592d1e688e314fdda26e272b190322fb
-c. Jenkins URL: http://localhost:8080
-d. Jenkins stops: ctrl + c
-app pwd: https://myaccount.google.com/apppasswords
-jeevanpgowda27@gmail.com
-jeevangowda016@gmail.com
+# Jenkins Notes
 
-JAVA_HOME: C:\Program Files\Java\jdk-24.0.1
-Git: C:\Program Files\Git\bin\git.exe
-Maven: C:\Program Files\apache-maven-3.9.11
-GitHub: https://github.com/Jeevan-LP/In4Suite_Expenses.git
-wffm fqun arcm zgcs
+> Setup · Freestyle project · Pipeline project · Jenkinsfile · Plugins · Reports · Troubleshooting
 
+Items marked **★** were added to your original notes. Sections marked **(corrected)** had mistakes that are now fixed.
 
-Free Style Project
------------------------------------------------------------
-1. Configure
-a. General
-----Description: It will allow to enter Description
-----HTML5 Notification Configuration: 
-----Quiet period: Jenkins waits for a specified number of seconds before actually starting a build after it is triggered.Avoid triggering immediately when multiple commits come together
-----Retry Count: This controls how many times Jenkins should retry a build after a failure, depending on the Jenkins feature/plugin being used.
-----Block build when upstream project is building: Job A = upstream, Job B = downstream Block build when upstream project is building
-----Block build when downstream project is building: Job A → Job B Block build when downstream project is building
+---
 
-2. Source Code Management
-a. None: No need to give any repository URL
-b. Git : Need to give any repository URL
-----Repository URL: Need to enter Git Hub URL
-----Credentials: If Git Hub account repository URL is private then, need to provide credential. For Public not required.
-----Branches to build: Need enter branch name like master or main etc.
+## Contents
 
-3. Build Triggers
-a. Trigger builds remotely (e.g., from scripts)
-b. Build after other projects are built: This creates a job dependency. Job A: Build Application ->Job B: Deploy Application ->Job C: Run Automation Tests. You can configure Job B, Build after other projects are built → Job A
-c. Build periodically: This runs the Jenkins job according to a time schedule, using a cron expression. H * * * *
-Schedule	                                Expression	       	       Description
-Every minute		                        * * * * *	               Runs once every minute.
-Every 5 minutes	                                */5 * * * *	               Runs every 5 minutes.
-Every 10 minutes	                        */10 * * * *	               Runs every 10 minutes.
-Every 15 minutes	                        */15 * * * *	               Runs every 15 minutes.
-Every 30 minutes	                        */30 * * * *	               Runs every 30 minutes (twice per hour).
-Every 2 minutes (hashed start)	                H/2 * * * *	               Runs every 2 minutes, with job-specific offset (balanced load).
-Every 5 minutes (hashed start)	                H/5 * * * *	               Runs every 5 minutes, staggered per job.
-At minute 0 (top of every hour)	                0 * * * *	               Runs at the start of every hour.
-At minutes 0 and 30	                        0,30 * * * *	               Runs twice every hour (at 0 and 30 minutes).
-At minutes 5, 20, 35, and 50	                5,20,35,50 * * * *	       Runs 4 times each hour at specified minutes.
-Between 10 and 20 minutes past each hour	10-20 * * * *	               Runs every minute between 10 and 20 past the hour.
-Every 10 minutes between 9 AM and 5 PM	        */10 9-17 * * *	               Runs every 10 minutes, only during working hours.
-Every minute on weekdays (Mon–Fri)	        * * * * 1-5	               Runs every minute Monday through Friday.
-Every 15 minutes on weekends	                */15 * * * 6,0	               Runs every 15 minutes only on Saturday and Sunday.
-Every 10 minutes on weekdays, 9 AM–6 PM	        */10 9-18 * * 1-5	       Runs every 10 minutes during office hours, Monday–Friday.
-Once every hour at random minute	        H * * * *	               Runs hourly at a unique, consistent minute for each job.
-Every 2 hours	                                H/2 * * * *	               Runs every 2 hours (your current config).
-Every hour	                                H * * * *	               Runs once every hour.
-Every day at midnight	                        H 0 * * *	               Runs daily at midnight.
-Every weekday at 9 AM	                        H 9 * * 1-5	               Runs Monday to Friday at 9 AM.
-Every 15 minutes	                        H/15 * * * *	               Runs every 15 minutes.
-Every Sunday at 2 AM	                        H 2 * * 0	               Runs weekly on Sunday 2 AM.
-On the 1st of every month at 5 PM               H 17 1 * *	               Runs monthly on the 1st at 5 PM.
-Twice a day (at 6 AM and 6 PM)	                H 6,18 * * *	               Runs two times per day.
-d. GitHub hook trigger for GITScm polling: GitHub Webhook will send notification to Jenkins when new code is pushed. 
-e. Poll SCM: This means Jenkins periodically checks the source-control repository for changes if we defined periodically
+1. [Quick reference](#quick-reference)
+2. [Freestyle project](#freestyle-project)
+3. [Cron schedule examples](#cron-schedule-examples)
+4. [Pipeline project](#pipeline-project)
+5. [Simple pipeline (corrected)](#simple-pipeline-corrected)
+6. [Jenkins plugins](#jenkins-plugins)
+7. [Jenkins pipeline script](#jenkins-pipeline-script)
+8. [Jenkinsfile git commands](#jenkinsfile-git-commands)
+9. [Real-time pipeline features](#real-time-pipeline-features)
+10. [Playwright Jenkinsfile (current project)](#playwright-jenkinsfile-current-project)
+11. [Email template for Maven project](#email-template-for-maven-project)
+12. [Troubleshooting](#troubleshooting)
 
-4. Build Environment
-a. Delete workspace before build starts: This tells Jenkins to clean/delete the existing workspace before starting the build.
-b. Use secret text(s) or file(s): This is used to provide sensitive credentials/secrets securely to the build.
-c. Add timestamps to the Console Output: This adds the date/time of each console log line.
-d. BrowserStack: BrowserStack allows your automation tests to execute on different browsers, operating systems, and devices in the cloud.
-e. Color ANSI Console Output: This makes supported console output display ANSI colors. ex: PASS, FAIL, WARNING
+---
 
+## Quick reference
 
+| Item | Value |
+|---|---|
+| Start Jenkins | `java -jar jenkins.war --enable-future-java` |
+| Jenkins URL | `http://localhost:8080` |
+| Stop Jenkins | `Ctrl + C` |
+| `JAVA_HOME` | `C:\Program Files\Java\jdk-24.0.1` |
+| Git | `C:\Program Files\Git\bin\git.exe` |
+| Maven | `C:\Program Files\apache-maven-3.9.11` |
+| GitHub repo | `https://github.com/Jeevan-LP/In4Suite_Expenses.git` |
+| Google app passwords page | `https://myaccount.google.com/apppasswords` |
+| Email accounts | `jeevanpgowda27@gmail.com`, `jeevangowda016@gmail.com` |
+| Jenkins token | Keep it in a password manager, not in this file |
+| Gmail app password | Keep it in a password manager, not in this file |
 
-5. Build Steps
-a. Executing windows batch command
-b. Execute shell command
-c. Publish docker image
-d. Start/Stop docker containers
+> **Security note ★**
+> The Jenkins token and the Gmail app password from your original notes are **left out on purpose**. Don't store secrets in a notes file or in Git. In Jenkins, keep them in **Manage Jenkins → Credentials** and read them with `withCredentials`. Because both values were pasted into a chat, treat them as exposed: delete the old Jenkins token, revoke the Google app password, and create new ones.
 
-6. Post-build Actions
-a. E-mail Notification
-b. Reports
-c. Logs
+---
 
-Pipeline Project
------------------------------------------------------------
-1. General
-a. Discard old builds : Automatically deletes old build history to save disk space.
-b. Do not allow concurrent builds : Allows only one build at a time. A new build waits until the previous one finishes
-c. Do not allow the pipeline to resume if the controller restarts : If Jenkins restarts while the pipeline is running, the pipeline will not continue from where it stopped.
-d. GitHub project : Links the Jenkins job to the GitHub repository/project.
-e. Pipeline speed/durability override : Controls the balance between pipeline performance and reliability when Jenkins is restarted.1
-f. This project is parameterised : Allows you to provide input values when starting the build, such as ENV_NAME=QA, BROWSER=chrome, etc.
-g. Throttle builds : Limits how many builds of this job can run at the same time, based on configured throttling rules. Time period like second, minutes and hours etc.
+## Freestyle project
 
+### 1. Configure → General
 
-2. Triggers
-a. Trigger builds remotely (e.g., from scripts)
-b. Build after other projects are built: This creates a job dependency. Job A: Build Application ->Job B: Deploy Application ->Job C: Run Automation Tests. You can configure Job B, Build after other projects are built → Job A
-c. Build periodically: This runs the Jenkins job according to a time schedule, using a cron expression. H * * * *
-Schedule	                                Expression	       	       Description
-Every minute		                        * * * * *	               Runs once every minute.
-Every 5 minutes	                                */5 * * * *	               Runs every 5 minutes.
-Every 10 minutes	                        */10 * * * *	               Runs every 10 minutes.
-Every 15 minutes	                        */15 * * * *	               Runs every 15 minutes.
-Every 30 minutes	                        */30 * * * *	               Runs every 30 minutes (twice per hour).
-Every 2 minutes (hashed start)	                H/2 * * * *	               Runs every 2 minutes, with job-specific offset (balanced load).
-Every 5 minutes (hashed start)	                H/5 * * * *	               Runs every 5 minutes, staggered per job.
-At minute 0 (top of every hour)	                0 * * * *	               Runs at the start of every hour.
-At minutes 0 and 30	                        0,30 * * * *	               Runs twice every hour (at 0 and 30 minutes).
-At minutes 5, 20, 35, and 50	                5,20,35,50 * * * *	       Runs 4 times each hour at specified minutes.
-Between 10 and 20 minutes past each hour	10-20 * * * *	               Runs every minute between 10 and 20 past the hour.
-Every 10 minutes between 9 AM and 5 PM	        */10 9-17 * * *	               Runs every 10 minutes, only during working hours.
-Every minute on weekdays (Mon–Fri)	        * * * * 1-5	               Runs every minute Monday through Friday.
-Every 15 minutes on weekends	                */15 * * * 6,0	               Runs every 15 minutes only on Saturday and Sunday.
-Every 10 minutes on weekdays, 9 AM–6 PM	        */10 9-18 * * 1-5	       Runs every 10 minutes during office hours, Monday–Friday.
-Once every hour at random minute	        H * * * *	               Runs hourly at a unique, consistent minute for each job.
-Every 2 hours	                                H/2 * * * *	               Runs every 2 hours (your current config).
-Every hour	                                H * * * *	               Runs once every hour.
-Every day at midnight	                        H 0 * * *	               Runs daily at midnight.
-Every weekday at 9 AM	                        H 9 * * 1-5	               Runs Monday to Friday at 9 AM.
-Every 15 minutes	                        H/15 * * * *	               Runs every 15 minutes.
-Every Sunday at 2 AM	                        H 2 * * 0	               Runs weekly on Sunday 2 AM.
-On the 1st of every month at 5 PM               H 17 1 * *	               Runs monthly on the 1st at 5 PM.
-Twice a day (at 6 AM and 6 PM)	                H 6,18 * * *	               Runs two times per day.
-d. GitHub hook trigger for GITScm polling: GitHub Webhook will send notification to Jenkins when new code is pushed. 
-e. Poll SCM: This means Jenkins periodically checks the source-control repository for changes if we defined periodically
+| Option | Meaning |
+|---|---|
+| Description | It will allow to enter Description |
+| HTML5 Notification Configuration | |
+| Quiet period | Jenkins waits for a specified number of seconds before actually starting a build after it is triggered. Avoid triggering immediately when multiple commits come together |
+| Retry Count | This controls how many times Jenkins should retry a build after a failure, depending on the Jenkins feature/plugin being used. |
+| Block build when upstream project is building | Job A = upstream, Job B = downstream. Block build when upstream project is building |
+| Block build when downstream project is building | Job A → Job B. Block build when downstream project is building |
 
-3. Pipeline
-a. Pipeline script
-b. Pipeline script from SCM
+### 2. Source Code Management
 
-4. Advanced
-a. Quiet period
+| Option | Meaning |
+|---|---|
+| None | No need to give any repository URL |
+| Git | Need to give any repository URL |
+| Repository URL | Need to enter GitHub URL |
+| Credentials | If the GitHub repository URL is private, then you need to provide credentials. For public, not required. |
+| Branches to build | Need to enter branch name like `master` or `main` etc. |
 
-----------------------------------------------------------------------------------------------------------------------------------------------
-Simple pipeline configuration
+### 3. Build Triggers
 
+| Trigger | Meaning |
+|---|---|
+| Trigger builds remotely (e.g., from scripts) | Starts the build from a script or URL with a token |
+| Build after other projects are built | Creates a job dependency. Job A: Build Application → Job B: Deploy Application → Job C: Run Automation Tests. Configure Job B, *Build after other projects are built* → Job A |
+| Build periodically | Runs the job on a time schedule using a cron expression, e.g. `H * * * *`. See [Cron schedule examples](#cron-schedule-examples) |
+| GitHub hook trigger for GITScm polling | GitHub Webhook sends a notification to Jenkins when new code is pushed |
+| Poll SCM | Jenkins periodically checks the source-control repository for changes, based on the schedule you define |
 
-pipeline{
+### 4. Build Environment
 
-	agent any
+| Option | Meaning |
+|---|---|
+| Delete workspace before build starts | Tells Jenkins to clean/delete the existing workspace before starting the build |
+| Use secret text(s) or file(s) | Provides sensitive credentials/secrets securely to the build |
+| Add timestamps to the Console Output | Adds the date/time of each console log line |
+| BrowserStack | Lets your automation tests run on different browsers, operating systems and devices in the cloud |
+| Color ANSI Console Output | Shows supported console output in ANSI colors, e.g. PASS, FAIL, WARNING |
 
-	     tools{
-	      	    nodejs 'NodeJS-20'
-		  }
+### 5. Build Steps
 
-	     
-	     parameters{
-			choice(name: 'Browser', choices['chromium', 'firefox'], description: 'parameters for browser')
-			choice(name: 'Suites', choices['Smoke', 'Regression'], description: 'parameters for suites')
-	     }
+| Step | Use |
+|---|---|
+| Execute Windows batch command | Runs `.bat` / Command Prompt commands on Windows |
+| Execute shell command | Runs shell commands on Linux or macOS |
+| Publish docker image | Pushes an image to a registry |
+| Start/Stop docker containers | Starts or stops containers |
 
-		  stages{
+### 6. Post-build Actions
 
-				stage('Cleaning workspace'){
-					step{ 
-						CleanWS()
-					    }
-				}
+| Action | Use |
+|---|---|
+| E-mail Notification | Sends a mail on build result |
+| Reports | Publishes test and HTML reports |
+| Logs | Console output and build logs |
+| Archive the artifacts ★ | Saves files such as reports and screenshots with the build |
+| Publish JUnit test result report ★ | Shows pass/fail results and trends in Jenkins |
+| Allure Report ★ | Publishes the Allure report (needs the Allure tool, see [Troubleshooting](#troubleshooting)) |
 
-				stage('Checkout from GitHub'){
-					step{
-						git branch: 'main',
-						url: 'repo url'
-					    }
-				}
+---
 
-				stage('Installing dependencies'){
-					step{
-						bat 'node -v && npm -v'
-						bat 'npm ci'
-					    }
-				}
+## Cron schedule examples
 
-				stage('Installing browser'){
-					step{
-						//bat 'npx playwright install chromium'
-						  bat 'npx playwright install ${param.Browser}'
-					    }
-				}
+Used by **Build periodically** and **Poll SCM**. The format is `minute hour day-of-month month day-of-week`.
 
-				stage('Playwright Test'){
-					step{
-						//bat 'npx playwright test --project=chromium'
-						  bat 'npx playwright test --project=${param.Browser}'
-					    }
-				}
-			}
+| Schedule | Expression | Description |
+|---|---|---|
+| Every minute | `* * * * *` | Runs once every minute. |
+| Every 5 minutes | `*/5 * * * *` | Runs every 5 minutes. |
+| Every 10 minutes | `*/10 * * * *` | Runs every 10 minutes. |
+| Every 15 minutes | `*/15 * * * *` | Runs every 15 minutes. |
+| Every 30 minutes | `*/30 * * * *` | Runs every 30 minutes (twice per hour). |
+| Every 2 minutes (hashed start) | `H/2 * * * *` | Runs every 2 minutes, with job-specific offset (balanced load). |
+| Every 5 minutes (hashed start) | `H/5 * * * *` | Runs every 5 minutes, staggered per job. |
+| At minute 0 (top of every hour) | `0 * * * *` | Runs at the start of every hour. |
+| At minutes 0 and 30 | `0,30 * * * *` | Runs twice every hour (at 0 and 30 minutes). |
+| At minutes 5, 20, 35, and 50 | `5,20,35,50 * * * *` | Runs 4 times each hour at specified minutes. |
+| Between 10 and 20 minutes past each hour | `10-20 * * * *` | Runs every minute between 10 and 20 past the hour. |
+| Every 10 minutes between 9 AM and 5 PM | `*/10 9-17 * * *` | Runs every 10 minutes, only during working hours. |
+| Every minute on weekdays (Mon–Fri) | `* * * * 1-5` | Runs every minute Monday through Friday. |
+| Every 15 minutes on weekends | `*/15 * * * 6,0` | Runs every 15 minutes only on Saturday and Sunday. |
+| Every 10 minutes on weekdays, 9 AM–6 PM | `*/10 9-18 * * 1-5` | Runs every 10 minutes during office hours, Monday–Friday. |
+| Once every hour at random minute | `H * * * *` | Runs hourly at a unique, consistent minute for each job. |
+| Every 2 hours (corrected) | `H */2 * * *` | Runs every 2 hours. |
+| Every hour | `H * * * *` | Runs once every hour. |
+| Every day at midnight | `H 0 * * *` | Runs daily at midnight. |
+| Every weekday at 9 AM | `H 9 * * 1-5` | Runs Monday to Friday at 9 AM. |
+| Every 15 minutes | `H/15 * * * *` | Runs every 15 minutes. |
+| Every Sunday at 2 AM | `H 2 * * 0` | Runs weekly on Sunday 2 AM. |
+| On the 1st of every month at 5 PM | `H 17 1 * *` | Runs monthly on the 1st at 5 PM. |
+| Twice a day (at 6 AM and 6 PM) | `H 6,18 * * *` | Runs two times per day. |
 
-	post{
+> **Correction:** your original table listed `H/2 * * * *` as "Every 2 hours". That expression runs every **2 minutes**. Every 2 hours is `H */2 * * *`.
 
-		always{
-			ArchieveArtifacts artifacts: 'playwright-report/**, allowEmptyArchiev:true
-		      }
+---
 
-		success{
-			emailext to: 'jeevanpgowda27@gmail.com',
-			echo 'Playwright pipeline succussed'
-		       }
-		
-		failure{
-			emaiext to: 'je'jeevanpgowda27@gmail.com',
-			echo 'Playwright pipeline failed'
-		       }
-	   }
-}
+## Pipeline project
 
-Section					Purpose
--------					-------
-pipeline				Defines the complete pipeline.
-agent any				Runs on any available Jenkins agent.
-tools					Selects the Node.js installation configured in Jenkins.
-stages					Contains the steps Jenkins executes in order.
-Checkout Code				Gets the code from the configured Git repository.
-Install Dependencies			Runs npm ci to install packages.
-Install Playwright Browser		Installs Chromium and its required browser components.
-Run Playwright Tests			Executes the Playwright tests.
-post					Defines actions that run after the pipeline stages.
--------------------------------------------------------------------------------------------------------------------
-Jenkins plugins
-a. Rebuilder plugin
-b. Test result analyzer
-c. Slack notification
-d. Browser Stack
-e. Green ball
-f. Mailer
-g. Docker plugin
-h. Email Extension
-i. Allure Jenkins Plugin
+### 1. General
 
+| Option | Meaning |
+|---|---|
+| Discard old builds | Automatically deletes old build history to save disk space. |
+| Do not allow concurrent builds | Allows only one build at a time. A new build waits until the previous one finishes |
+| Do not allow the pipeline to resume if the controller restarts | If Jenkins restarts while the pipeline is running, the pipeline will not continue from where it stopped. |
+| GitHub project | Links the Jenkins job to the GitHub repository/project. |
+| Pipeline speed/durability override | Controls the balance between pipeline performance and reliability when Jenkins is restarted. |
+| This project is parameterised | Allows you to provide input values when starting the build, such as `ENV_NAME=QA`, `BROWSER=chrome`, etc. |
+| Throttle builds | Limits how many builds of this job can run at the same time, based on configured throttling rules. Time period like seconds, minutes and hours etc. |
 
-Jenkins Pipeline script
-✔️ clone your repo
-✔️ build the project
-✔️ run Selenium tests
-✔️ publish TestNG/JUnit reports
-------------------------------------------------------------------------------------------------------------------
-Jenkins file>>>>>>>>>>>>>>>>>>>for 1st time
-commands for Jenkins file vanishing after every new latest code pushed to git hub
-navigate to path: cd /c/Eclipse/In4Suite_Expenses
-git bash: nano Jenkinsfile
-paste Jenkins grovy script
-press cntl + o to save
-press enter
-press cntl + x
-git bash: ls -l | grep Jenkinsfile to verify whether Jenkins file created or not
-git bash: git add Jenkinsfile
-git bash: git commit -m "Add Jenkinsfile"
-git bash: git push origin main
+### 2. Triggers
 
-modify/edit
-navigate to path: cd /c/Eclipse/In4Suite_Expenses
-git bash: ls -l | grep Jenkinsfile to verify whether Jenkins file created or not
-git bash: nano Jenkinsfile
-press cntl + o to save
-press enter
-press cntl + x
-git bash: ls -l | grep Jenkinsfile to verify whether Jenkins file created or not
-git bash: git add Jenkinsfile
-git bash: git commit -m "Add Jenkinsfile"
-git bash: git push origin main
+Same options as the Freestyle project: remote trigger, build after other projects, build periodically, GitHub hook trigger, Poll SCM. See [Cron schedule examples](#cron-schedule-examples).
 
+### 3. Pipeline
 
+| Definition | Use |
+|---|---|
+| Pipeline script | Paste the script directly into the job |
+| Pipeline script from SCM | Jenkins reads the `Jenkinsfile` from your Git repo |
 
+**Setting up "Pipeline script from SCM" ★**
 
--------------------------------------------------------------------------------------------------------------------
+1. Set **Definition** to **Pipeline script from SCM**.
+2. Set **SCM** to **Git**.
+3. Enter the **Repository URL**, and **Credentials** if the repo is private.
+4. Set **Branch Specifier** to `*/main`.
+5. Set **Script Path** to `Jenkinsfile`.
+6. Save, then click **Build Now**.
+
+### 4. Advanced
+
+| Option | Meaning |
+|---|---|
+| Quiet period | Seconds Jenkins waits before starting a triggered build |
+
+---
+
+## Simple pipeline (corrected)
+
+Your original script had several syntax errors. This is the corrected version.
+
+```groovy
 pipeline {
+
     agent any
 
     tools {
-        maven 'MVN'
-        jdk   'JAVA'
+        nodejs 'NodeJS-20'
     }
 
-    /* ---------------------------
-       🔹 Jenkins Job Parameters
-       --------------------------- */
     parameters {
-        choice(name: 'ENV_NAME', choices: ['QA', 'STAGE', 'UAT'], description: 'Select Environment')
-        choice(name: 'BROWSER', choices: ['chrome', 'edge'], description: 'Choose Browser')
-        choice(name: 'SUITE', choices: ['smoke', 'regression'], description: 'Select Test Suite')
-        string(name: 'RUN_BY', defaultValue: 'Jeevan Gowda', description: 'Who triggered the build?')
-    }
-
-    environment {
-        GIT_REPO    = "https://github.com/Jeevan-LP/In4Suite_Expenses.git"
-        GIT_BRANCH  = "main"
-
-        MAIL_FROM   = "jeevanpgowda27@gmail.com"
-        MAIL_TO     = "jeevanpgowda27@gmail.com, jeevangowda016@gmail.com"
-
-        Execution_Environment = "${params.ENV_NAME}"
-        Browser               = "${params.BROWSER}"
-        Triggered_By          = "${params.RUN_BY}"
-    }
-
-    options {
-        timestamps()
-        buildDiscarder(logRotator(numToKeepStr: '10'))
-        ansiColor('xterm')
+        choice(name: 'Browser', choices: ['chromium', 'firefox'], description: 'parameters for browser')
+        choice(name: 'Suites',  choices: ['Smoke', 'Regression'], description: 'parameters for suites')
     }
 
     stages {
 
-        /* ---------------------------------------------------------
-           Clean workspace before build
-        --------------------------------------------------------- */
-        stage('Clean Workspace') {
+        stage('Cleaning workspace') {
             steps {
                 cleanWs()
             }
         }
 
-        /* ---------------------------------------------------------
-           Stage 1: Checkout Code
-        --------------------------------------------------------- */
-        stage('Checkout Code From GitHub') {
+        stage('Checkout from GitHub') {
             steps {
-                echo "Checking out source code..."
-                git branch: "${GIT_BRANCH}",
-                    credentialsId: 'git-creds',
-                    url: "${GIT_REPO}"
+                // Pipeline script pasted in the job: use git with your repo URL
+                git branch: 'main', url: 'repo url'
+                // Pipeline script from SCM: use this instead
+                // checkout scm
             }
         }
 
-        /* ---------------------------------------------------------
-           Stage 2: Build Framework
-        --------------------------------------------------------- */
-        stage('Build Framework') {
+        stage('Installing dependencies') {
             steps {
-                echo "Building framework..."
-                bat "mvn clean install -DskipTests"
+                bat 'node -v && npm -v'
+                bat 'npm ci'
             }
         }
 
-        /* ---------------------------------------------------------
-           Stage 3: Execute TestNG
-        --------------------------------------------------------- */
-        stage('Run TestNG Tests') {
+        stage('Installing browser') {
             steps {
-                echo "Running TestNG suite: ${params.SUITE}"
-                bat "mvn test -DsuiteXmlFile=testng.xml"
+                // bat 'npx playwright install chromium'
+                bat "npx playwright install ${params.Browser}"
             }
         }
 
-        /* ---------------------------------------------------------
-           Stage 4: Publish Extent Report
-        --------------------------------------------------------- */
-        stage('Publish Extent Report') {
+        stage('Playwright Test') {
             steps {
-                echo "Publishing Extent Report..."
-
-                archiveArtifacts artifacts: "Results/Reports/*.html", allowEmptyArchive: false
-
-                publishHTML(target: [
-                    reportDir: 'Results/Reports',
-                    reportFiles: '*.html',
-                    reportName: 'Extent Report',
-                    keepAll: true,
-                    alwaysLinkToLastBuild: true
-                ])
-            }
-        }
-
-        /* ---------------------------------------------------------
-           Stage 5: Archive Test Artifacts
-        --------------------------------------------------------- */
-        stage('Archive Test Artifacts') {
-            steps {
-                echo "Archiving test reports..."
-                junit allowEmptyResults: true, testResults: "target/surefire-reports/*.xml"
-                archiveArtifacts artifacts: "target/**/*.*", allowEmptyArchive: true
+                // bat 'npx playwright test --project=chromium'
+                bat "npx playwright test --project=${params.Browser}"
             }
         }
     }
 
-    /* ---------------------------------------------------------
-       POST ACTIONS (EMAIL NOTIFICATIONS)
-    --------------------------------------------------------- */
     post {
 
+        always {
+            archiveArtifacts artifacts: 'playwright-report/**', allowEmptyArchive: true
+        }
+
         success {
-            echo "✔ Build Successful"
-
-            emailext(
-                from: "${MAIL_FROM}",
-                to: "${MAIL_TO}",
-                subject: "BUILD SUCCESS – ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                mimeType: 'text/html',
-                body: """
-                    <h2 style="color:green;">In4 Suite Automation Build - SUCCESS</h2>
-                    <b>Project :</b> ${env.JOB_NAME}<br>
-                    <b>Environment :</b> ${Execution_Environment}<br>
-                    <b>Browser :</b> ${Browser}<br>
-                    <b>Triggered By :</b> ${Triggered_By}<br>
-                    <b>Test Suite :</b> ${params.SUITE}<br>
-                    <b>Status :</b> ${currentBuild.currentResult}<br>
-                    <b>Build URL :</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a><br>
-                    <b>Extent Report :</b> <a href="${env.BUILD_URL}Extent_Report/">Click here</a><br><br>
-
-                    <br><b>Please have a look at the attached logs and reports summary.</b><br><br>
-
-                    Regards,<br>
-                    <b>Jeevan L P<br>Software Test Engineer</b>
-                """,
-                attachmentsPattern: "**/Results/Reports/*.html",
-                attachLog: true
-            )
+            emailext to: 'jeevanpgowda27@gmail.com',
+                     subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                     body: "Playwright pipeline succeeded.\nBuild: ${env.BUILD_URL}"
         }
 
         failure {
-            echo "❌ Build Failed"
-
-            emailext(
-                from: "${MAIL_FROM}",
-                to: "${MAIL_TO}",
-                subject: "BUILD FAILED – ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                mimeType: 'text/html',
-                body: """
-                    <h2 style="color:red;">In4 Suite Automation Build - FAILED</h2>
-                    <b>Project :</b> ${env.JOB_NAME}<br>
-                    <b>Environment :</b> ${Execution_Environment}<br>
-                    <b>Browser :</b> ${Browser}<br>
-                    <b>Triggered By :</b> ${Triggered_By}<br>
-                    <b>Test Suite :</b> ${params.SUITE}<br>
-                    <b>Status :</b> ${currentBuild.currentResult}<br>
-                    <b>Build URL :</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a><br>
-                    <b>Extent Report :</b> <a href="${env.BUILD_URL}Extent_Report/">Click here</a><br><br>
-
-                    <br><b>Please have a look at the attached logs and reports summary.</b><br><br>
-
-                    Regards,<br>
-                    <b>Jeevan L P<br>Software Test Engineer</b>
-                """,
-                attachmentsPattern: "**/Results/Reports/*.html",
-                attachLog: true
-            )
+            emailext to: 'jeevanpgowda27@gmail.com',
+                     subject: "FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                     body: "Playwright pipeline failed.\nBuild: ${env.BUILD_URL}"
         }
     }
-}----------------------------------------------------------------------------------------------------------------
-✅ What This Real-Time Pipeline Includes
-✔️ 1. Clean Workspace
+}
+```
 
-Avoids stale files:
+**What was fixed**
 
-deleteDir()
+| Original | Corrected | Why |
+|---|---|---|
+| `choices['chromium', 'firefox']` | `choices: ['chromium', 'firefox']` | Missing colon |
+| `step { }` | `steps { }` | The keyword is `steps` |
+| `CleanWS()` | `cleanWs()` | Names are case-sensitive |
+| `'npx playwright install ${param.Browser}'` | `"npx playwright install ${params.Browser}"` | Variables need double quotes, and it is `params` |
+| `ArchieveArtifacts` | `archiveArtifacts` | Spelling |
+| `'playwright-report/**, allowEmptyArchiev:true` | `'playwright-report/**', allowEmptyArchive: true` | Missing closing quote, spelling |
+| `emaiext`, `'je'jeevanpgowda27...` | `emailext to: 'jeevanpgowda27@gmail.com'` | Spelling and a broken string |
+| `echo` inside `emailext` | `subject:` and `body:` | `emailext` needs a subject and a body |
 
-✔️ 2. Parallel Browser Testing
+**Note:** the `Suites` parameter is defined but not used yet. To use it, add `--grep @${params.Suites}` to the test command once your tests carry those tags.
 
-Runs Chrome + Edge at same time:
+### What each section does
 
-parallel { Chrome ; Edge }
+| Section | Purpose |
+|---|---|
+| `pipeline` | Defines the complete pipeline. |
+| `agent any` | Runs on any available Jenkins agent. |
+| `tools` | Selects the Node.js installation configured in Jenkins. |
+| `parameters` | Inputs the user picks when starting the build. |
+| `stages` | Contains the steps Jenkins executes in order. |
+| Checkout Code | Gets the code from the configured Git repository. |
+| Install Dependencies | Runs `npm ci` to install packages. |
+| Install Playwright Browser | Installs Chromium and its required browser components. |
+| Run Playwright Tests | Executes the Playwright tests. |
+| `post` | Defines actions that run after the pipeline stages. |
 
-✔️ 3. Retry Failed Tests
+---
 
-Real-time teams must reduce flaky test failures:
+## Jenkins plugins
 
-retry(1)
+| # | Plugin | Use |
+|---|---|---|
+| a | Rebuilder plugin | Re-run a build with the same parameters |
+| b | Test result analyzer | Trends and history of test results |
+| c | Slack notification | Sends build status to Slack |
+| d | Browser Stack | Run tests on cloud browsers and devices |
+| e | Green ball | Shows green instead of blue for successful builds |
+| f | Mailer | Basic email notifications |
+| g | Docker plugin | Builds and runs Docker containers from Jenkins |
+| h | Email Extension | `emailext` step with HTML emails |
+| i | Allure Jenkins Plugin | Publishes Allure reports |
+| j | NodeJS ★ | Provides the `nodejs` tool used in `tools { }` |
+| k | HTML Publisher ★ | Provides `publishHTML` |
+| l | Timestamper ★ | Provides `timestamps()` |
+| m | Pipeline and Git ★ | Run pipelines and check out from Git |
+| n | Credentials Binding ★ | Provides `withCredentials` |
 
-✔️ 4. Publish TestNG HTML Report
+> **Allure also needs a tool, not only the plugin ★**
+> Go to **Manage Jenkins → Tools → Allure → Add Allure**, name it `Allure`, tick **Install automatically** and save.
 
-Visible in Jenkins UI.
+---
 
-✔️ 5. Archive Screenshots
+## Jenkins pipeline script
 
-Selenium screenshots stored automatically:
+What a Jenkins pipeline script does, step by step:
 
-archiveArtifacts 'target/screenshots/**'
+- ✔️ clone your repo
+- ✔️ build the project
+- ✔️ run Selenium tests
+- ✔️ publish TestNG/JUnit reports
 
-✔️ 6. Build management
+---
 
-Prevent concurrent builds
+## Jenkinsfile git commands
 
-Logs limited to last 10 builds
+Jenkins reads the `Jenkinsfile` from GitHub, so the file must be committed and pushed. If it isn't pushed, Jenkins keeps using the old version or doesn't find it.
 
-Job auto-timeouts after 30 mins
+### First time
 
-✔️ 7. HTML Reports
+```bash
+cd /c/Eclipse/In4Suite_Expenses
+nano Jenkinsfile                      # paste the Jenkins groovy script
+# press Ctrl + O to save, press Enter, then Ctrl + X to exit
+ls -l | grep Jenkinsfile              # verify the file was created
+git add Jenkinsfile
+git commit -m "Add Jenkinsfile"
+git push origin main
+```
 
-Professional display inside Jenkins.
+### Modify / edit
 
-🎯 To make this fully work, your project must support:
-✔️ -Dbrowser=chrome and -Dbrowser=edge
+```bash
+cd /c/Eclipse/In4Suite_Expenses
+ls -l | grep Jenkinsfile              # verify the file exists
+nano Jenkinsfile                      # edit the script
+# press Ctrl + O to save, press Enter, then Ctrl + X to exit
+ls -l | grep Jenkinsfile              # verify again
+git add Jenkinsfile
+git commit -m "Update Jenkinsfile"
+git push origin main
+```
 
-in your Selenium BaseTest:
+> **Tip ★:** if you edit in VS Code instead, run `git add Jenkinsfile`, `git commit -m "Update Jenkinsfile"` and `git push origin main` in its terminal. Then open the file on GitHub to confirm your change is there before building.
 
-String browser = System.getProperty("browser", "chrome");
+---
 
-✔️ Screenshots saved to:
-target/screenshots
+## Real-time pipeline features
 
----------------------------------------------------------------------------------------------------------
-For Maven project email trigger
+| # | Feature | What it does |
+|---|---|---|
+| 1 | Clean Workspace | Avoids stale files: `deleteDir()` |
+| 2 | Parallel Browser Testing | Runs Chrome + Edge at the same time: `parallel { Chrome ; Edge }` |
+| 3 | Retry Failed Tests | Reduces flaky test failures in real teams: `retry(1)` |
+| 4 | Publish TestNG HTML Report | Visible in the Jenkins UI |
+| 5 | Archive Screenshots | Selenium screenshots stored automatically: `archiveArtifacts 'target/screenshots/**'` |
+| 6 | Build management | Prevents concurrent builds, keeps logs for the last 10 builds, and times out jobs after 30 minutes |
+| 7 | HTML Reports | Professional display inside Jenkins |
 
+**To make this fully work, your project must support:**
+
+- `-Dbrowser=chrome` and `-Dbrowser=edge`, read in your Selenium `BaseTest`:
+  ```java
+  String browser = System.getProperty("browser", "chrome");
+  ```
+- Screenshots saved to `target/screenshots`
+
+### Example script ★ (Maven + Selenium + TestNG)
+
+Adjust the tool names to match **Manage Jenkins → Tools**.
+
+```groovy
+pipeline {
+    agent any
+
+    options {
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timeout(time: 30, unit: 'MINUTES')
+        timestamps()
+    }
+
+    stages {
+        stage('Clean Workspace') {
+            steps { deleteDir() }
+        }
+
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+
+        stage('Build') {
+            steps { bat 'mvn clean compile -DskipTests' }
+        }
+
+        stage('Run Tests') {
+            parallel {
+                stage('Chrome') {
+                    steps { retry(1) { bat 'mvn test -Dbrowser=chrome' } }
+                }
+                stage('Edge') {
+                    steps { retry(1) { bat 'mvn test -Dbrowser=edge' } }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
+            publishHTML(target: [
+                reportDir: 'target/surefire-reports',
+                reportFiles: 'index.html',
+                reportName: 'TestNG HTML Report',
+                keepAll: true,
+                alwaysLinkToLastBuild: true,
+                allowMissing: true
+            ])
+            archiveArtifacts artifacts: 'target/screenshots/**', allowEmptyArchive: true
+        }
+    }
+}
+```
+
+> **Watch out:** Chrome and Edge run in the same workspace, so both write to `target/`. If their reports overwrite each other, give each run its own report folder.
+
+---
+
+## Playwright Jenkinsfile (current project)
+
+The script for your `Typescript_Pipeline_Practice` job. It uses `bat` because the Jenkins service on your PC can't find `powershell`.
+
+```groovy
+// Jenkinsfile.windows
+// Declarative Jenkins pipeline for Windows build agents
+
+pipeline {
+  agent any
+  tools {
+    git 'Default'
+    nodejs 'NodeJS-20'      // must match the name set in Manage Jenkins -> Tools
+  }
+  options { timestamps() }
+  parameters {
+    choice(
+      name: 'TEST_TAG',
+      choices: ['@jenkins', '@smoke', '@regression'],
+      description: 'Select the Playwright tag to run'
+    )
+    choice(
+      name: 'BROWSER',
+      choices: ['chromium', 'firefox', 'webkit'],
+      description: 'Select the browser for tests'
+    )
+    choice(
+      name: 'MODE',
+      choices: ['headless', 'headed'],
+      description: 'Run tests in headless or headed mode'
+    )
+  }
+  environment {
+    NODE_ENV = 'test'
+    CI = '1'
+    RECIPIENT_EMAIL = 'jeevanpgowda27@gmail.com'
+  }
+  stages {
+    stage('🔄 Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+    stage('📦 Install Dependencies') {
+      steps {
+        bat 'node -v && npm -v'
+        bat 'npm ci'
+      }
+    }
+    stage('🤖 Install Playwright Browser') {
+      steps {
+        bat "npx playwright install ${params.BROWSER}"
+      }
+    }
+    stage('▶️ Run Playwright Tests') {
+      steps {
+        script {
+          def tag = params.TEST_TAG ?: '@jenkins'
+          def browserFlag = "--project=${params.BROWSER}"
+          def modeFlag = params.MODE == 'headed' ? '--headed' : ''
+          def grepFlag = "--grep \"${tag}\""
+          bat "npx playwright test tests/jenkinsTest.spec.ts ${browserFlag} ${grepFlag} ${modeFlag}"
+        }
+      }
+    }
+  }
+  post {
+    always {
+      archiveArtifacts artifacts: 'playwright-report/**,allure-results/**,test-results/**', allowEmptyArchive: true
+      junit testResults: 'test-results/results.xml', allowEmptyResults: true
+      allure includeProperties: false, results: [[path: 'allure-results']]
+      publishHTML([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: 'playwright-report',
+        reportFiles: 'index.html',
+        reportName: 'Playwright HTML Report'
+      ])
+
+      script {
+        if (env.RECIPIENT_EMAIL?.trim()) {
+          emailext(
+            subject: "Jenkins Build: ${env.JOB_NAME} #${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
+            body: """
+              <h2>Playwright Test Execution Report</h2>
+              <p><b>Job:</b> ${env.JOB_NAME}</p>
+              <p><b>Build:</b> #${env.BUILD_NUMBER}</p>
+              <p><b>Status:</b> ${currentBuild.currentResult}</p>
+              <p><b>Test Tag:</b> ${params.TEST_TAG}</p>
+              <p><b>Browser:</b> ${params.BROWSER}</p>
+              <p><a href="${env.BUILD_URL}">Open Jenkins Build</a> |
+                 <a href="${env.BUILD_URL}allure">Open Allure Report</a></p>
+            """,
+            to: env.RECIPIENT_EMAIL,
+            mimeType: 'text/html'
+          )
+        }
+      }
+    }
+    success {
+      bat 'if exist allure-results rmdir /s /q allure-results'
+    }
+  }
+}
+```
+
+**Before you run it**
+
+- The Allure **tool** must be added in Manage Jenkins → Tools.
+- `tests/jenkinsTest.spec.ts` must exist in your repo, and its tests must carry the tag you pick.
+- `headed` mode needs a desktop session. A Jenkins Windows service has none, so use `headless` there.
+- The `junit` and `publishHTML` steps show nothing unless `playwright.config.ts` also has the `junit` and `html` reporters.
+
+---
+
+## Email template for Maven project
+
+Paste this into the **Editable Email Notification** content, with **Content Type** set to HTML.
+
+```html
 <html>
   <body>
     <h3>In4 Suite Automation Build Execution</h3>
@@ -526,8 +597,29 @@ For Maven project email trigger
     </p>
   </body>
 </html>
+```
 
+**Notes ★**
 
+- `${BUILD_USER}` needs the **Build User Vars** plugin, otherwise it prints empty.
+- `${BUILD_LOG}` can make a huge email. Limit it with `${BUILD_LOG, maxLines=100}`.
+- Environment and Browser are fixed text here. Change them when you run something other than QA and Chrome.
 
+---
 
-   
+## Troubleshooting
+
+Errors from your own builds, with the fix for each ★.
+
+| Error or symptom | Cause | Fix |
+|---|---|---|
+| `Cannot run program "powershell"` | The Jenkins service can't find `powershell.exe` | Use `bat` instead of `powershell`, or add `C:\Windows\System32\WindowsPowerShell\v1.0` to PATH and restart Jenkins |
+| `No Allure installation found` | The plugin is installed but the Allure tool is not | Manage Jenkins → Tools → Allure → Add Allure → install automatically |
+| `unexpected token: }` or other Groovy errors | Syntax error in the Jenkinsfile, for example `git branch: 'main',` with no `url` | Fix the syntax. The error names the line number. |
+| Jenkins runs an old version of the Jenkinsfile | Jenkins reads the file from GitHub, not from VS Code | `git add`, `git commit`, `git push`, then rebuild |
+| Parameters don't show on the first build | Jenkins registers them after the first run | Run once, then use **Build with Parameters** |
+| `Tool type "nodejs" does not have an install of "NodeJS-20"` | The tool name doesn't match | Match the name in Manage Jenkins → Tools exactly |
+| `No SCM` with `checkout scm` | The script was pasted into the job | Use **Pipeline script from SCM**, or use the `git` step with your URL |
+| Playwright says no tests found | Wrong spec path or no matching tag | Check the file path and the tag in the test title |
+| Headed mode shows no browser window | The Jenkins service has no desktop | Use headless, or run the agent in a logged-in desktop session |
+| Allure report is empty | `allure-results` had no files | Check the Playwright stage ran tests and the `allure-playwright` reporter is set |
