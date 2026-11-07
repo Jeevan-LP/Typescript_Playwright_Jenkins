@@ -18,6 +18,7 @@ pipeline {
   agent any
   tools {
     git 'Default'
+    nodejs 'NodeJS-20'      // must match the name set in Manage Jenkins -> Tools
   }
   options { timestamps() }
   parameters {
@@ -40,6 +41,7 @@ pipeline {
   environment {
     NODE_ENV = 'test'
     CI = '1'
+    RECIPIENT_EMAIL = 'jeevanpgowda27@gmail.com'
   }
   stages {
     stage('🔄 Checkout') {
@@ -49,12 +51,13 @@ pipeline {
     }
     stage('📦 Install Dependencies') {
       steps {
-        powershell 'npm ci'
+        bat 'node -v && npm -v'
+        bat 'npm ci'
       }
     }
-    stage('🤖 Install Playwright Browsers & Dependencies') {
+    stage('🤖 Install Playwright Browser') {
       steps {
-        powershell 'npx playwright install --with-deps'
+        bat "npx playwright install ${params.BROWSER}"
       }
     }
     stage('▶️ Run Playwright Tests') {
@@ -64,7 +67,7 @@ pipeline {
           def browserFlag = "--project=${params.BROWSER}"
           def modeFlag = params.MODE == 'headed' ? '--headed' : ''
           def grepFlag = "--grep \"${tag}\""
-          powershell "npx playwright test tests/jenkinsTest.spec.ts ${browserFlag} ${grepFlag} ${modeFlag}"
+          bat "npx playwright test tests/jenkinsTest.spec.ts ${browserFlag} ${grepFlag} ${modeFlag}"
         }
       }
     }
@@ -94,7 +97,8 @@ pipeline {
               <p><b>Status:</b> ${currentBuild.currentResult}</p>
               <p><b>Test Tag:</b> ${params.TEST_TAG}</p>
               <p><b>Browser:</b> ${params.BROWSER}</p>
-              <p><a href="${env.BUILD_URL}">Open Jenkins Build</a></p>
+              <p><a href="${env.BUILD_URL}">Open Jenkins Build</a> |
+                 <a href="${env.BUILD_URL}allure">Open Allure Report</a></p>
             """,
             to: env.RECIPIENT_EMAIL,
             mimeType: 'text/html'
@@ -103,9 +107,7 @@ pipeline {
       }
     }
     success {
-      script {
-        powershell 'Remove-Item -Recurse -Force allure-results -ErrorAction SilentlyContinue'
-      }
+      bat 'if exist allure-results rmdir /s /q allure-results'
     }
   }
 }
